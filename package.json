@@ -1,0 +1,23 @@
+{
+  "name": "multi_layer_perceptron",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "watch": "tsc -w",
+    "test": "jest --verbose"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "typescript": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.0.2",
+    "@types/node": "^16.10.3",
+    "jest": "^27.2.5",
+    "ts-jest": "^27.0.5"
+  }
+}
