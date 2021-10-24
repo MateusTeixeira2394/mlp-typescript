@@ -1,4 +1,5 @@
-import { createNeuralNetwork } from "./helper/mlp.helper"
+import { createNeuralNetwork, eqm, feedForAward } from "./helper/mlp.helper"
+import { FeedForAwardOutPut } from "./interfaces/feed_for_award_output"
 import { Layer } from "./models/layer"
 
 export class Mlp {
@@ -54,7 +55,23 @@ export class Mlp {
 
       while (running) {
 
-         const eqmBefore = 0
+         // Passo 6.1: Obter o erro quadrático médio antes dos ajustes de peso
+         const eqmBefore = eqm(this.layers, this.samples, this.expectedOutputs)
+
+         // Passo 6.2: Para cada uma das amostras faça:
+         for (let k = 0; k < this.samples.length; k++) {
+            
+            const response: FeedForAwardOutPut = feedForAward(this.samples[k],this.layers) 
+
+            // Passo 6.2.1: Trazer a lista de I de cada camada
+            const matI: number[][] = response.matI
+
+            // Passo 6.2.2: Trazer a lista de Y de cada camada
+            const matY: number[][] = response.matY
+
+            // Passo 6.2.3: Trazer a lista de gradientes de cada camada
+
+         }
 
       }
 

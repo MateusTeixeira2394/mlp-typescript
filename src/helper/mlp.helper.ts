@@ -94,11 +94,7 @@ export function feedForAward(inputs: number[], layers: Layer[]): FeedForAwardOut
 
 }
 
-// Método para calcular o erro quadrático médio
-export function getEqm() {
-
-}
-
+// Trazer o erro quadrático
 export function squareError(expectedOutputs: number[], outputs: number[]) {
 
     let eq: number = 0
@@ -123,5 +119,49 @@ export function eqm(layers: Layer[], samples: number[][], expectedOutputs: numbe
     }
 
     return eqm / p
+
+}
+
+// Derivada da função tangente hiperbólica
+export function tanhDerivated(value: number): number {
+    var e = Math.E
+    var negValue = value * (-1)
+    return 4 / (((e ** negValue) + (e ** value)) ** 2);
+}
+
+// Trazer a lista de gradientes da última camada
+// Obs: arrY = lista de saídas calculadas pelas última cada, arrI = lista de potenciais de ativação da última camada
+export function lastLayerGradients(expectedOutputs: number[], arrY: number[], arrI: number[]): number[] {
+
+    const gradients: number[] = []
+
+    for (let j = 0; j < expectedOutputs.length; j++) {
+        gradients.push((expectedOutputs[j] - arrY[j]) * tanhDerivated(arrI[j]))
+    }
+
+    return gradients
+
+}
+
+// Trazer a lista de gradientes das camadas escondidas
+// Obs: posteriorLayer = camada posterior, posteriorGradients = lista de gradientes da camada posterior
+// arrI = lista de potenciais de ativação da camada atual
+export function hiddenLayerGradients(posteriorLayer: Layer, posteriorGradients: number[], arrI: number[]): number[] {
+
+    const gradients: number[] = []
+
+    for (let j = 0; j < arrI.length; j++) {
+
+        let sum: number = 0
+        for (let k = 0; k < posteriorGradients.length; k++) {
+            // OBS: j + 1 que é para "pular" o peso do bias
+            sum = sum + (posteriorGradients[k] * posteriorLayer.weights[k][j + 1])
+        }
+
+        gradients.push(-1 * sum * tanhDerivated(arrI[j]))
+
+    }
+
+    return gradients
 
 }

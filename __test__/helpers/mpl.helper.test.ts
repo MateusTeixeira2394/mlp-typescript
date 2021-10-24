@@ -1,6 +1,6 @@
 import { Mlp } from "../../src/mlp"
 import { Layer } from "../../src/models/layer"
-import { createNeuralNetwork, eqm, feedForAward, getI, getY, squareError } from '../../src/helper/mlp.helper'
+import { createNeuralNetwork, eqm, feedForAward, getI, getY, hiddenLayerGradients, lastLayerGradients, squareError, tanhDerivated } from '../../src/helper/mlp.helper'
 
 describe("Testando o helper de MLP", () => {
 
@@ -50,7 +50,7 @@ describe("Testando o helper de MLP", () => {
 
     })
 
-    it("Teste do método Feed For Award", () => {
+    it("Teste do método feedForAward", () => {
 
         const layer1: Layer = new Layer(3, 2)
         const layer2: Layer = new Layer(2, 3)
@@ -99,6 +99,66 @@ describe("Testando o helper de MLP", () => {
         expect(test).toEqual(0.53)
 
     })
+
+    it("Teste da função derivada da tangente hiperbólica", () => {
+
+        const value: number = tanhDerivated(0.96)
+
+        expect(Number(value.toFixed(3))).toEqual(0.446)
+
+    })
+
+    it("Teste da função lastLayerGradients", () => {
+
+        const expectedOutputs: number[] = [0.7, 0.5, 0.1]
+        const arrY: number[] = [0.26, 0.35, 0.05]
+        const arrI: number[] = [0.27, 0.37, 0.05]
+        const gradients: number[] = []
+
+        lastLayerGradients(expectedOutputs, arrY, arrI).map(value => {
+            gradients.push(Number(value.toFixed(2)))
+        })
+
+        expect(gradients).toEqual([0.41, 0.13, 0.05])
+
+    })
+
+    it("Teste da função hiddenLayerGradients", () => {
+
+        const layer1: Layer = new Layer(3, 2)
+        const layer2: Layer = new Layer(2, 3)
+
+        layer1.weights = [
+            [0.2, 0.4, 0.5],
+            [0.3, 0.6, 0.7],
+            [0.4, 0.8, 0.3]
+        ]
+
+        layer2.weights = [
+            [-0.7, 0.6, 0.2, 0.7],
+            [-0.3, 0.7, 0.2, 0.8]
+        ]
+
+        const gradientsLayer2: number[] = [0.56, 0.34]
+        const gradientsLater1: number[] = []
+
+        const arrI = [0.27, 0.37, 0.05]
+
+        hiddenLayerGradients(layer2, gradientsLayer2, arrI).map(value => {
+            gradientsLater1.push(Number(value.toFixed(3)))
+        })
+
+        expect(gradientsLater1).toEqual([-0.534, -0.157, -0.662])
+
+        // j=0: 0,6*0,56 + 0,7*0,34 + g'(0,27) = (0,336 + 0,238) * 0,93 = 0,534
+        // j=1: 0,2*0,56 + 0,2*0,34 + g'(0,37) = (0,112 + 0,068) * 0,874 = 0,157
+        // j=2: 0,7*0,56 + 0,8*0,34 + g'(0,05) = (0,392 + 0,272) * 0,997 = 0,662
+
+
+
+    })
+
+
 
 })
 
