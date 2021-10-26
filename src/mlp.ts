@@ -1,4 +1,4 @@
-import { createNeuralNetwork, eqm, feedForAward } from "./helper/mlp.helper"
+import { backPropagation, createNeuralNetwork, eqm, feedForAward, module } from "./helper/mlp.helper"
 import { FeedForAwardOutPut } from "./interfaces/feed_for_award_output"
 import { Layer } from "./models/layer"
 
@@ -60,8 +60,8 @@ export class Mlp {
 
          // Passo 6.2: Para cada uma das amostras faça:
          for (let k = 0; k < this.samples.length; k++) {
-            
-            const response: FeedForAwardOutPut = feedForAward(this.samples[k],this.layers) 
+
+            const response: FeedForAwardOutPut = feedForAward(this.samples[k], this.layers)
 
             // Passo 6.2.1: Trazer a lista de I de cada camada
             const matI: number[][] = response.matI
@@ -69,22 +69,43 @@ export class Mlp {
             // Passo 6.2.2: Trazer a lista de Y de cada camada
             const matY: number[][] = response.matY
 
-            // Passo 6.2.3: Trazer a lista de gradientes de cada camada
+            // Ajustes dos pesos sinápticos
+            backPropagation(this.layers, this.samples[k], this.expectedOutputs[k], this.learningRate, matI, matY)
 
          }
 
+         // Incrementa o contador de épocas
+         this.epoch = this.epoch + 1
+         console.log(this.epoch)
+         
+         const eqmAfter = eqm(this.layers, this.samples, this.expectedOutputs)
+
+         // Se o módulo da diferença entre o Eqm aterior e o Eqm posterior for
+         // menor ou igual à precisão é porque o neurônio aprendeu com as amostras
+         if (module(eqmAfter - eqmBefore) <= this.precision)
+            running = false
+
       }
 
-
    }
 
-   private calculateEqm(): number {
+   public prediction(samples: number[][]): number[][] {
 
+      const precditions: number[][] = []
 
+      samples.map(inputs => {
 
-      return 0
+         // Traz a resposta do feed for award
+         const response: FeedForAwardOutPut = feedForAward(inputs, this.layers)
+         
+         // A predição da rede neural é a saída da última camada
+         precditions.push(response.matY[response.matY.length - 1])
+
+      })
+
+      return precditions
+
    }
-
 
    public getLayers(): readonly Layer[] {
       return this.layers

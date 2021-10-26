@@ -4,21 +4,33 @@ import { Mlp } from "./mlp"
 
 
 // Taxa de aprendizagem (n)
-const learningRate: number = 0.005
+const learningRate: number = 0.05
 
 // Taxa de precisão requerida (e)
-const precision: number = 0.00001
+const precision: number = 0.0000001
 
-const scaffold: number[] = [3, 4, 1]
+// Estrutura da rede neural
+// 
+const structure: number[] = [2, 2, 1]
 
 
 CsvReader.importCsv(path.join(__dirname, '../csv/samples.csv'))
     .then(samples => {
 
         CsvReader.importCsv(path.join(__dirname, '../csv/outputs.csv'))
-            .then(outputs => {
+            .then(expectedOutputs => {
 
-                
+                const mlp = new Mlp(samples, expectedOutputs, learningRate, precision, structure)
+
+                mlp.learn()
+
+                console.log(mlp.prediction([
+                    [0, 0],
+                    [0, 1],
+                    [1, 0],
+                    [1, 1]
+                ]))
+
             })
 
     })

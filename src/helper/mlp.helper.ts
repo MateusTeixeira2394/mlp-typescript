@@ -158,10 +158,82 @@ export function hiddenLayerGradients(posteriorLayer: Layer, posteriorGradients: 
             sum = sum + (posteriorGradients[k] * posteriorLayer.weights[k][j + 1])
         }
 
-        gradients.push(-1 * sum * tanhDerivated(arrI[j]))
+        gradients.push(sum * tanhDerivated(arrI[j]))
 
     }
 
     return gradients
 
+}
+
+export function adjustWeights(weights: number[][], learningRate: number, gradients: number[], inputs: number[]): number[][] {
+
+    for (let j = 0; j < weights.length; j++) {
+        for (let i = 0; i < weights[j].length; i++) {
+            weights[j][i] = weights[j][i] + learningRate * gradients[j] * inputs[i]
+        }
+    }
+
+    return weights
+}
+
+// Função para calcular a lista dos gradientes de cada camada. Ela retorna uma matriz de gradientes
+export function getMatGradients(layers: Layer[], expectedOutputs: number[], matY: number[][], matI: number[][]): number[][] {
+
+    // matriz de gradientes que contém a lista de gradientes de cada camada
+    const matGradients: number[][] = []
+
+    // Para cada camada, de trás para frente, faça:
+    for (let l = layers.length - 1; l >= 0; l--) {
+
+        // Se for a última camada escondida
+        if (l == layers.length - 1) {
+
+            const gradients: number[] = lastLayerGradients(expectedOutputs, matY[l], matI[l])
+            matGradients.unshift(gradients)
+
+            // Se for alguma outra camada escondida
+        } else {
+
+            const gradients: number[] = hiddenLayerGradients(layers[l + 1], matGradients[matGradients.length - 1], matI[l])
+            matGradients.unshift(gradients)
+        }
+
+    }
+
+    return matGradients
+
+}
+
+export function backPropagation(
+    layers: Layer[], inputs: number[], expectedOutputs: number[], learningRate: number,
+    matI: number[][], matY: number[][]
+): Layer[] {
+
+    // Calcular a lista dos gradientes de cada camada
+    const matGradients: number[][] = getMatGradients(layers, expectedOutputs, matY, matI)
+
+    // Para cada camada, de trás para frente, faça:
+    for (let l = layers.length - 1; l >= 0; l--) {
+
+        // Se for a primeira camada
+        if (l == 0) {
+
+            // Note que as entradas para os ajustes dos pesos são as entradas das amostras acrescentado com -1 do bias
+            adjustWeights(layers[l].weights, learningRate, matGradients[l], [-1, ...inputs])
+
+            // Para as outras camadas... 
+        } else {
+            // Note que as entradas para os ajustes dos pesos são as saídas da camada anterior acrescentado com -1 do bias
+            adjustWeights(layers[l].weights, learningRate, matGradients[l], [-1, ...matY[l - 1]])
+        }
+
+    }
+
+    return layers
+
+}
+
+export function module(value: number): number {
+    return Math.sqrt(Math.pow(value, 2))
 }
